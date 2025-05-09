@@ -100,13 +100,13 @@ func main() {
 		}
 		forward(server, rw, r)
 	}))
-
 	log.Println("Starting load balancer...")
 	log.Printf("Tracing support enabled: %t", *traceEnabled)
 	frontend.Start()
 	signal.WaitForTerminationSignal()
 }
 
+// monitorHealth This method monitors the status of all servers every 10 seconds.
 func monitorHealth() {
 	for {
 		var newHealthy []string
@@ -122,12 +122,14 @@ func monitorHealth() {
 	}
 }
 
+// hash This method hashes the string
 func hash(s string) uint32 {
 	h := fnv.New32a()
 	h.Write([]byte(s))
 	return h.Sum32()
 }
 
+// getServerIndex This method gets a path URL as a param and returns the server, which is to serve the user
 func getServerIndex(path string) (string, bool) {
 	mu.RLock()
 	defer mu.RUnlock()
