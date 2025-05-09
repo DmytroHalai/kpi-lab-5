@@ -7,11 +7,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/DmytroHalai/achitecture-practice-4/httptools"
 	"github.com/DmytroHalai/achitecture-practice-4/signal"
 )
+
+var mu sync.RWMutex
+var healthyServers []string
 
 var (
 	port       = flag.Int("port", 8090, "load balancer port")
@@ -86,24 +90,28 @@ func forward(dst string, rw http.ResponseWriter, r *http.Request) error {
 
 func main() {
 	flag.Parse()
-
-	// TODO: Використовуйте дані про стан сервера, щоб підтримувати список тих серверів, яким можна відправляти запит.
-	for _, server := range serversPool {
-		server := server
-		go func() {
-			for range time.Tick(10 * time.Second) {
-				log.Println(server, "healthy:", health(server))
-			}
-		}()
-	}
-
+	go monitorHealth()
 	frontend := httptools.CreateServer(*port, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		// TODO: Реалізуйте свій алгоритм балансувальника.
 		forward(serversPool[0], rw, r)
 	}))
-
 	log.Println("Starting load balancer...")
 	log.Printf("Tracing support enabled: %t", *traceEnabled)
 	frontend.Start()
 	signal.WaitForTerminationSignal()
+}
+
+func monitorHealth() {
+	for {
+		var newHealthy []string
+		for _, server := range serversPool {
+			if health(server) {
+				newHealthy = append(newHealthy, server)
+			}
+		}
+		mu.Lock()
+		healthyServers = newHealthy
+		mu.Unlock()
+		time.Sleep(10 * time.Second)
+	}
 }
