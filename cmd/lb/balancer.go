@@ -108,10 +108,13 @@ func main() {
 
 // monitorHealth This method monitors the status of all servers every 10 seconds.
 func monitorHealth() {
+	log.Println("Starting health monitor...")
 	for {
 		var newHealthy []string
 		for _, server := range serversPool {
-			if health(server) {
+			isHealthy := health(server)
+			log.Println(server, "healthy:", isHealthy)
+			if isHealthy {
 				newHealthy = append(newHealthy, server)
 			}
 		}
