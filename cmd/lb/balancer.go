@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"log"
 	"net/http"
@@ -92,9 +93,14 @@ func main() {
 	flag.Parse()
 	go monitorHealth()
 	frontend := httptools.CreateServer(*port, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		// TODO: Реалізуйте свій алгоритм балансувальника.
-		forward(serversPool[0], rw, r)
+		server, ok := getServerIndex(r.URL.Path)
+		if !ok {
+			http.Error(rw, "No healthy servers", http.StatusServiceUnavailable)
+			return
+		}
+		forward(server, rw, r)
 	}))
+
 	log.Println("Starting load balancer...")
 	log.Printf("Tracing support enabled: %t", *traceEnabled)
 	frontend.Start()
@@ -114,4 +120,20 @@ func monitorHealth() {
 		mu.Unlock()
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
+func getServerIndex(path string) (string, bool) {
+	mu.RLock()
+	defer mu.RUnlock()
+	if len(healthyServers) == 0 {
+		return "", false
+	}
+	index := int(hash(path)) % len(healthyServers)
+	return healthyServers[index], true
 }
