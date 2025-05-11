@@ -36,7 +36,7 @@ func TestBalancer_DistributesRequests(t *testing.T) {
         resp.Body.Close()
     }
 
-    if len(serverHits) < 2 {
+    if len(serverHits) < 3 {
         t.Errorf("expected requests to be distributed to at least 2 servers, got: %v", serverHits)
     }
     t.Logf("Distribution: %v", serverHits)
