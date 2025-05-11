@@ -23,7 +23,6 @@ func TestBalancer_DistributesRequests(t *testing.T) {
     serverHits := make(map[string]int)
 
     for i := 0; i < requests; i++ {
-        // Меняем query, чтобы балансировщик выбирал разные сервера
         url := fmt.Sprintf("%s/api/v1/some-data?i=%d", baseAddress, i)
         resp, err := client.Get(url)
         if err != nil {
