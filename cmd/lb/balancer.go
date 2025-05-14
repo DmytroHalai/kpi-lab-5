@@ -93,7 +93,7 @@ func main() {
 	flag.Parse()
 	go monitorHealth()
 	frontend := httptools.CreateServer(*port, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		server, ok := getServerIndex(r.URL.Path)
+		server, ok := getServerIndex(r.URL.RequestURI())
 		if !ok {
 			http.Error(rw, "No healthy servers", http.StatusServiceUnavailable)
 			return
