@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   test:
     build:
@@ -7,66 +8,42 @@ services:
     networks:
       - servers
     depends_on:
-      server1:
-        condition: service_healthy
-      server2:
-        condition: service_healthy
-      server3:
-        condition: service_healthy
-      balancer:
-        condition: service_healthy
+      - server1
+      - server2
+      - server3
+      - balancer
 
   balancer:
     build:
       context: .
-      dockerfile: Dockerfile.test
-    command: ["./lb", "--trace=true"]
+      dockerfile: Dockerfile
+    command: ["lb", "--trace=true"]
     networks:
       - servers
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   server1:
     build:
       context: .
-      dockerfile: Dockerfile.test
-    command: ["./server", "--port=8080"]
+      dockerfile: Dockerfile
+    command: ["server", "--port=8080"]
     networks:
       - servers
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   server2:
     build:
       context: .
-      dockerfile: Dockerfile.test
-    command: ["./server", "--port=8081"]
+      dockerfile: Dockerfile
+    command: ["server", "--port=8081"]
     networks:
       - servers
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   server3:
     build:
       context: .
-      dockerfile: Dockerfile.test
-    command: ["./server", "--port=8082"]
+      dockerfile: Dockerfile
+    command: ["server", "--port=8082"]
     networks:
       - servers
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
 networks:
   servers:
