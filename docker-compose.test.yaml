@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   test:
     build:
@@ -12,5 +14,38 @@ services:
       - balancer
 
   balancer:
-    # Для тестів включаємо режим відлагодження, коли балансувальник додає інформацію, кому було відправлено запит.
+    build:
+      context: .
+      dockerfile: Dockerfile.test
     command: ["lb", "--trace=true"]
+    networks:
+      - servers
+
+  server1:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: ["server", "--port=8080"]
+    networks:
+      - servers
+
+  server2:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: ["server", "--port=8081"]
+    networks:
+      - servers
+
+  server3:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: ["server", "--port=8082"]
+    networks:
+      - servers
+
+networks:
+  servers:
+    driver: bridge
+
