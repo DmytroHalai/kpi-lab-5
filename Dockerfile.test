@@ -3,11 +3,9 @@ FROM golang:1.24 AS build
 WORKDIR /go/src/practice-4
 COPY . .
 
-# Завантаження залежностей
 RUN go mod download
 
-# Компіляція лише server (якщо потрібно)
-RUN go build -o server ./server
+RUN go build -o server ./cmd/server
 
 ENV INTEGRATION_TEST=1
 ENTRYPOINT ["go", "test", "./integration"]
