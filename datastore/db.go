@@ -124,6 +124,10 @@ func (db *Db) writeLoop() {
 }
 
 func (db *Db) Close() error {
+	db.stopOnce.Do(func() {
+		close(db.writeCh)
+	})
+	db.wg.Wait()
 	return db.out.Close()
 }
 
