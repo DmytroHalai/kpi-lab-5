@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 const (
@@ -23,6 +24,11 @@ type Db struct {
 	outOffset int64
 	filename  string
 	index     hashIndex
+
+	mu       sync.Mutex
+	writeCh  chan entry
+	wg       sync.WaitGroup
+	stopOnce sync.Once
 }
 
 type Entry struct {
