@@ -42,7 +42,6 @@ func (db *Db) ReadAll() ([]Entry, error) {
 		return nil, err
 	}
 	defer file.Close()
-
 	var entries []Entry
 	reader := bufio.NewReader(file)
 	for {
@@ -63,7 +62,6 @@ func Open(dir string) (*Db, error) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, fmt.Errorf("не вдалося створити каталог %s: %w", dir, err)
 	}
-
 	outputPath := filepath.Join(dir, outFileName)
 	f, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
@@ -73,11 +71,14 @@ func Open(dir string) (*Db, error) {
 		out:      f,
 		filename: outputPath,
 		index:    make(hashIndex),
+		writeCh:  make(chan entry, 128),
 	}
 	err = db.recover()
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
+	db.wg.Add(1)
+	go db.writeLoop()
 	return db, nil
 }
 
