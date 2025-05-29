@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,7 +20,14 @@ var port = flag.Int("port", 8080, "server port")
 const confResponseDelaySec = "CONF_RESPONSE_DELAY_SEC"
 const confHealthFailure = "CONF_HEALTH_FAILURE"
 
+const teamKey = "object261"
+const dbAddr = "http://db:8083"
+
 func main() {
+	now := time.Now().Format("2006-01-02")
+	postBody, _ := json.Marshal(map[string]string{"value": now})
+	_, _ = http.Post(fmt.Sprintf("%s/db/%s", dbAddr, teamKey), "application/json", bytes.NewReader(postBody))
+
 	h := new(http.ServeMux)
 
 	h.HandleFunc("/health", func(rw http.ResponseWriter, r *http.Request) {
@@ -41,11 +51,29 @@ func main() {
 
 		report.Process(r)
 
+		key := r.URL.Query().Get("key")
+		if key == "" {
+			key = teamKey
+		}
+
+		resp, err := http.Get(fmt.Sprintf("%s/db/%s", dbAddr, key))
+		if err != nil {
+			http.Error(rw, "db unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == http.StatusNotFound {
+			rw.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if resp.StatusCode != http.StatusOK {
+			http.Error(rw, "db error", http.StatusInternalServerError)
+			return
+		}
+		body, _ := io.ReadAll(resp.Body)
 		rw.Header().Set("content-type", "application/json")
 		rw.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(rw).Encode([]string{
-			"1", "2",
-		})
+		rw.Write(body)
 	})
 
 	h.Handle("/report", report)

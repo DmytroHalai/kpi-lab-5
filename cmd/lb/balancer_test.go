@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-// Тести для hash()
-
 func TestHashDeterministic(t *testing.T) {
 	input := "/user/42"
 	if hash(input) != hash(input) {
@@ -30,8 +28,6 @@ func TestHashCollisionAvoidance(t *testing.T) {
 		hashes[h] = path
 	}
 }
-
-// Тести для getServerIndex()
 
 func TestGetServerIndexSingleServer(t *testing.T) {
 	mu.Lock()
@@ -109,8 +105,6 @@ func TestGetServerIndexConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
-// Тести для forward() з мок-сервером
-
 func TestForwardSuccess(t *testing.T) {
 	mockBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Test", "true")
@@ -144,7 +138,6 @@ func TestForwardSuccess(t *testing.T) {
 }
 
 func TestForwardUnavailable(t *testing.T) {
-	// тут використовуємо некоректний адрес, щоб симулювати падіння бекенду
 	dst := "localhost:9999"
 
 	req := httptest.NewRequest("GET", "http://lb/", nil)
@@ -159,8 +152,6 @@ func TestForwardUnavailable(t *testing.T) {
 		t.Errorf("Expected 503, got %d", rr.Code)
 	}
 }
-
-// Хелпери
 
 func uniqueValues(m map[string]string) []string {
 	set := make(map[string]struct{})

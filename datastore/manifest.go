@@ -19,13 +19,13 @@ func loadManifest(dir string) (*Manifest, error) {
 		if os.IsNotExist(err) {
 			return &Manifest{Segments: []string{}, ActiveIndex: -1}, nil
 		}
-		return nil, fmt.Errorf("не вдалося відкрити маніфест: %w", err)
+		return nil, fmt.Errorf("failed to open manifest: %w", err)
 	}
 	defer f.Close()
 
 	var manifest Manifest
 	if err := json.NewDecoder(f).Decode(&manifest); err != nil {
-		return nil, fmt.Errorf("не вдалося декодувати маніфест: %w", err)
+		return nil, fmt.Errorf("failed to decode manifest: %w", err)
 	}
 	return &manifest, nil
 }
