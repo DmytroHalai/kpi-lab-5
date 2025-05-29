@@ -88,7 +88,6 @@ func (db *Db) recover() error {
 		return err
 	}
 	defer f.Close()
-
 	in := bufio.NewReader(f)
 	for err == nil {
 		var (
@@ -102,7 +101,6 @@ func (db *Db) recover() error {
 			}
 			break
 		}
-
 		db.index[record.key] = db.outOffset
 		db.outOffset += int64(n)
 	}
@@ -134,18 +132,15 @@ func (db *Db) Get(key string) (string, error) {
 	if !ok {
 		return "", ErrNotFound
 	}
-
 	file, err := os.Open(db.out.Name())
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
-
 	_, err = file.Seek(position, 0)
 	if err != nil {
 		return "", err
 	}
-
 	var record entry
 	if _, err = record.DecodeFromReader(bufio.NewReader(file)); err != nil {
 		return "", err
@@ -154,16 +149,8 @@ func (db *Db) Get(key string) (string, error) {
 }
 
 func (db *Db) Put(key, value string) error {
-	e := entry{
-		key:   key,
-		value: value,
-	}
-	n, err := db.out.Write(e.Encode())
-	if err == nil {
-		db.index[key] = db.outOffset
-		db.outOffset += int64(n)
-	}
-	return err
+	db.writeCh <- entry{key: key, value: value}
+	return nil
 }
 
 func (db *Db) Size() (int64, error) {
