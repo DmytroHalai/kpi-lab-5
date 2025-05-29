@@ -108,6 +108,22 @@ func (db *Db) recover() error {
 	return err
 }
 
+func (db *Db) writeLoop() {
+	defer db.wg.Done()
+	for e := range db.writeCh {
+		data := e.Encode()
+		n, err := db.out.Write(data)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "write error: %v\n", err)
+			continue
+		}
+		db.mu.Lock()
+		db.index[e.key] = db.outOffset
+		db.outOffset += int64(n)
+		db.mu.Unlock()
+	}
+}
+
 func (db *Db) Close() error {
 	return db.out.Close()
 }
