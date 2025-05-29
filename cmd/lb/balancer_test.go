@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// Тести для hash()
+// Tests for hash()
 
 func TestHashDeterministic(t *testing.T) {
 	input := "/user/42"
@@ -31,7 +31,7 @@ func TestHashCollisionAvoidance(t *testing.T) {
 	}
 }
 
-// Тести для getServerIndex()
+// Tests for getServerIndex()
 
 func TestGetServerIndexSingleServer(t *testing.T) {
 	mu.Lock()
@@ -109,7 +109,7 @@ func TestGetServerIndexConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
-// Тести для forward() з мок-сервером
+// Tests for forward() with mock-server
 
 func TestForwardSuccess(t *testing.T) {
 	mockBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +144,6 @@ func TestForwardSuccess(t *testing.T) {
 }
 
 func TestForwardUnavailable(t *testing.T) {
-	// тут використовуємо некоректний адрес, щоб симулювати падіння бекенду
 	dst := "localhost:9999"
 
 	req := httptest.NewRequest("GET", "http://lb/", nil)
@@ -160,7 +159,7 @@ func TestForwardUnavailable(t *testing.T) {
 	}
 }
 
-// Хелпери
+// Helper function to extract unique values from a map
 
 func uniqueValues(m map[string]string) []string {
 	set := make(map[string]struct{})

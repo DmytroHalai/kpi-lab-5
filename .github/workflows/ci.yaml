@@ -22,9 +22,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
+      - name: Build Docker images
+        run: docker-compose -f docker-compose.test.yaml build
+
       - name: Build and Test with Docker Compose
         run: |
-          docker-compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from test
+          docker-compose -f docker-compose.test.yaml up --exit-code-from test
 
       - name: Shutdown Docker Compose
         run: docker-compose -f docker-compose.test.yaml down
