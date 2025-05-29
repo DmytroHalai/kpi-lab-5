@@ -1,11 +1,11 @@
 package integration
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"testing"
-	"time"
+  "fmt"
+  "net/http"
+  "os"
+  "testing"
+  "time"
 )
 
 const baseAddress = "http://balancer:8090"
@@ -20,10 +20,11 @@ func TestBalancer_DistributesRequests(t *testing.T) {
     }
 
     const requests = 15
+    const teamKey = "object261" 
     serverHits := make(map[string]int)
 
     for i := 0; i < requests; i++ {
-        url := fmt.Sprintf("%s/api/v1/some-data?i=%d", baseAddress, i)
+        url := fmt.Sprintf("%s/api/v1/some-data?key=%s&req=%d", baseAddress, teamKey, i)
         resp, err := client.Get(url)
         if err != nil {
             t.Fatalf("request %d failed: %v", i, err)
@@ -32,12 +33,17 @@ func TestBalancer_DistributesRequests(t *testing.T) {
         if lbFrom == "" {
             t.Errorf("request %d: missing lb-from header", i)
         }
+        body := make([]byte, 1024)
+        n, _ := resp.Body.Read(body)
+        if resp.StatusCode != http.StatusOK || n == 0 {
+            t.Errorf("request %d: expected non-empty body, got status %d, body: %s", i, resp.StatusCode, string(body[:n]))
+        }
         serverHits[lbFrom]++
         resp.Body.Close()
     }
 
     if len(serverHits) < 3 {
-        t.Errorf("expected requests to be distributed to at least 2 servers, got: %v", serverHits)
+        t.Errorf("expected requests to be distributed to at least 3 servers, got: %v", serverHits)
     }
     t.Logf("Distribution: %v", serverHits)
 }
