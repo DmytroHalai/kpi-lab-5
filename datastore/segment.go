@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 )
@@ -69,15 +70,15 @@ func (ds *SegmentedDatastore) Put(key, value string) error {
 
 func (ds *SegmentedDatastore) Get(key string) (string, error) {
   for i := len(ds.segments) - 1; i >= 0; i-- {
-    val, err := ds.segments[i].Get(key)
+    value, err := ds.segments[i].Get(key)
     if err == nil {
-      return val, nil
+      return value, nil
     }
-    if err != ErrNotFound {
+    if !errors.Is(err, ErrNotFound) {
       return "", err
     }
   }
-  return "", ErrNotFound
+  return "", fmt.Errorf("key not found: %s", key)
 }
 
 func (ds *SegmentedDatastore) Close() error {
