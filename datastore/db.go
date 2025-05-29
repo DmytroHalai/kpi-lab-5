@@ -14,6 +14,7 @@ const (
   MAX_SEGMENT_SIZE = 1 << 10 
 )
 
+
 var ErrNotFound = fmt.Errorf("record does not exist")
 
 type hashIndex map[string]int64
@@ -23,6 +24,34 @@ type Db struct {
   outOffset int64
   filename string
   index hashIndex
+}
+
+type Entry struct {
+  Key   string
+  Value string
+}
+
+func (db *Db) ReadAll() ([]Entry, error) {
+    file, err := os.Open(db.filename)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    var entries []Entry
+    reader := bufio.NewReader(file)
+    for {
+        var record entry
+        n, err := record.DecodeFromReader(reader)
+        if err != nil {
+            if errors.Is(err, io.EOF) && n == 0 {
+                break
+            }
+            return nil, fmt.Errorf("error decoding record: %w", err)
+        }
+        entries = append(entries, Entry{Key: record.key, Value: record.value})
+    }
+    return entries, nil
 }
 
 func Open(dir string) (*Db, error) {
