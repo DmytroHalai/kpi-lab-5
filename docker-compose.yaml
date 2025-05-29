@@ -3,6 +3,14 @@ networks:
 
 services:
 
+  db:
+    build: .
+    command: "db"
+    networks:
+      - servers
+    ports:
+      - "8083:8083"
+
   balancer:
     build: .
     command: "lb"

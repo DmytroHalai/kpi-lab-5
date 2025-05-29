@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DmytroHalai/achitecture-practice-4/httptools"
-	"github.com/DmytroHalai/achitecture-practice-4/signal"
+	"github.com/DmytroHalai/achitecture-practice-5/httptools"
+	"github.com/DmytroHalai/achitecture-practice-5/signal"
 )
 
 var mu sync.RWMutex
