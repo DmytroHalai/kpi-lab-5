@@ -9,7 +9,10 @@ import (
 	"path/filepath"
 )
 
-const outFileName = "current-data"
+const (
+	outFileName      = "current-data"
+	MAX_SEGMENT_SIZE = 1 << 10 
+)
 
 var ErrNotFound = fmt.Errorf("record does not exist")
 
