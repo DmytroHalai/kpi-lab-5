@@ -26,10 +26,10 @@ func NewSegmentedDatastore(dir string, maxSegmentSize int64) (*SegmentedDatastor
 
 	for _, segFile := range manifest.Segments {
 		path := filepath.Join(dir, segFile)
-		fmt.Printf("Відкриваємо сегмент: %q\n", path)
+		fmt.Printf("opening segment: %q\n", path)
 		db, err := Open(path)
 		if err != nil {
-			return nil, fmt.Errorf("не вдалося відкрити сегмент %q: %w", path, err)
+			return nil, fmt.Errorf("failed to open segment %q: %w", path, err)
 		}
 		ds.segments = append(ds.segments, db)
 	}
@@ -53,12 +53,12 @@ func (ds *SegmentedDatastore) createNewSegment() error {
 	path := filepath.Join(ds.dir, segmentName)
 
 	if err := os.MkdirAll(ds.dir, 0755); err != nil {
-		return fmt.Errorf("не вдалося створити каталог %s: %w", ds.dir, err)
+		return fmt.Errorf("failed to create catalogue %s: %w", ds.dir, err)
 	}
 
 	db, err := Open(path)
 	if err != nil {
-		return fmt.Errorf("не вдалося відкрити сегмент %s: %w", path, err)
+		return fmt.Errorf("failed to open segment %s: %w", path, err)
 	}
 	ds.segments = append(ds.segments, db)
 
@@ -80,7 +80,7 @@ func (ds *SegmentedDatastore) Merge() error {
 	for _, segment := range ds.segments {
 		entries, err := segment.ReadAll()
 		if err != nil {
-			return fmt.Errorf("не вдалося прочитати сегмент %s: %w", segment.filename, err)
+			return fmt.Errorf("failed to read segment %s: %w", segment.filename, err)
 		}
 		for _, e := range entries {
 			if e.Value == "" {
@@ -95,12 +95,12 @@ func (ds *SegmentedDatastore) Merge() error {
 	tmpPath := filepath.Join(ds.dir, tmpSegmentName)
 
 	if err := os.MkdirAll(ds.dir, 0755); err != nil {
-		return fmt.Errorf("не вдалося створити каталог %s: %w", ds.dir, err)
+		return fmt.Errorf("failed to create catalogue %s: %w", ds.dir, err)
 	}
 
 	tmpDb, err := Open(tmpPath)
 	if err != nil {
-		return fmt.Errorf("не вдалося відкрити тимчасовий сегмент %s: %w", tmpPath, err)
+		return fmt.Errorf("failed to open temp segment %s: %w", tmpPath, err)
 	}
 
 	for key, value := range latest {
@@ -112,7 +112,7 @@ func (ds *SegmentedDatastore) Merge() error {
 	}
 
 	if err := tmpDb.Close(); err != nil {
-		return fmt.Errorf("не вдалося закрити tmpDb перед перейменуванням: %w", err)
+		return fmt.Errorf("failed to close tmpDb before renaiming: %w", err)
 	}
 
 	for _, seg := range ds.segments {
@@ -124,7 +124,7 @@ func (ds *SegmentedDatastore) Merge() error {
 	finalPath := filepath.Join(ds.dir, finalSegmentName)
 
 	if err := os.Rename(tmpPath, finalPath); err != nil {
-		return fmt.Errorf("не вдалося перейменувати %s у %s: %w", tmpPath, finalPath, err)
+		return fmt.Errorf("failed to rename %s into %s: %w", tmpPath, finalPath, err)
 	}
 
 	newDb, err := Open(finalPath)

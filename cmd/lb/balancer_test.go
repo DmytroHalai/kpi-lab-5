@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+// Tests for hash()
+
 func TestHashDeterministic(t *testing.T) {
 	input := "/user/42"
 	if hash(input) != hash(input) {
@@ -28,6 +30,8 @@ func TestHashCollisionAvoidance(t *testing.T) {
 		hashes[h] = path
 	}
 }
+
+// Tests for getServerIndex()
 
 func TestGetServerIndexSingleServer(t *testing.T) {
 	mu.Lock()
@@ -105,6 +109,8 @@ func TestGetServerIndexConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
+// Tests for forward() with mock-server
+
 func TestForwardSuccess(t *testing.T) {
 	mockBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Test", "true")
@@ -152,6 +158,8 @@ func TestForwardUnavailable(t *testing.T) {
 		t.Errorf("Expected 503, got %d", rr.Code)
 	}
 }
+
+// Helper function to extract unique values from a map
 
 func uniqueValues(m map[string]string) []string {
 	set := make(map[string]struct{})

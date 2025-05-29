@@ -50,7 +50,7 @@ func (db *Db) ReadAll() ([]Entry, error) {
 			if errors.Is(err, io.EOF) && n == 0 {
 				break
 			}
-			return nil, fmt.Errorf("помилка при декодуванні запису: %w", err)
+			return nil, fmt.Errorf("error during record decoding: %w", err)
 		}
 		if record.value == "" {
 			continue
@@ -62,7 +62,7 @@ func (db *Db) ReadAll() ([]Entry, error) {
 
 func Open(dir string) (*Db, error) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return nil, fmt.Errorf("не вдалося створити каталог %s: %w", dir, err)
+		return nil, fmt.Errorf("failed to create a catalogue %s: %w", dir, err)
 	}
 	outputPath := filepath.Join(dir, outFileName)
 	f, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)

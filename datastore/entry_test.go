@@ -27,7 +27,7 @@ func TestReadValue(t *testing.T) {
 	b.Decode(originalBytes)
 	t.Log("encode/decode", a, b)
 	if a != b {
-		t.Error("Encode/Decode mismatch")
+		t.Error("encode/decode mismatch")
 	}
 
 	b = entry{}
@@ -37,9 +37,9 @@ func TestReadValue(t *testing.T) {
 	}
 	t.Log("encode/decodeFromReader", a, b)
 	if a != b {
-		t.Error("Encode/DecodeFromReader mismatch")
+		t.Error("encode/decodeFromReader mismatch")
 	}
 	if n != len(originalBytes) {
-		t.Errorf("DecodeFromReader() read %d bytes, expected %d", n, len(originalBytes))
+		t.Errorf("decodeFromReader() read %d bytes, expected %d", n, len(originalBytes))
 	}
 }

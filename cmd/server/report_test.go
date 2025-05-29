@@ -15,13 +15,13 @@ func TestReport_Process(t *testing.T) {
 
 	r.Process(req)
 	if !reflect.DeepEqual(r["test-author"], []string{"1"}) {
-		t.Errorf("Unexpected report state %s", r)
+		t.Errorf("unexpected report state %s", r)
 	}
 
 	req.Header.Set("lb-req-cnt", "2")
 	r.Process(req)
 	if !reflect.DeepEqual(r["test-author"], []string{"1", "2"}) {
-		t.Errorf("Unexpected report state %s", r)
+		t.Errorf("unexpected report state %s", r)
 	}
 
 	req.Header.Set("lb-author", "test-len")
@@ -30,6 +30,6 @@ func TestReport_Process(t *testing.T) {
 		r.Process(req)
 	}
 	if len(r["test-len"]) != reportMaxLen {
-		t.Errorf("Unexpectd error length: %d", len(r["test-len"]))
+		t.Errorf("unexpectd error length: %d", len(r["test-len"]))
 	}
 }

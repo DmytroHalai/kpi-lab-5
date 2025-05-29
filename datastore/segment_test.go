@@ -92,7 +92,7 @@ func TestMergeSegments(t *testing.T) {
 	}
 
 	if len(ds.segments) != 1 {
-		t.Errorf("1 segment was waited after merge, but got %d", len(ds.segments))
+		t.Errorf("only one segment was waited after merge, but got %d", len(ds.segments))
 	}
 }
 
