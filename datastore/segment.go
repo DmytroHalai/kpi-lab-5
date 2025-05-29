@@ -6,8 +6,9 @@ import (
 )
 
 type SegmentedDatastore struct {
-  dir      string
-  segments []*Db 
+  dir            string
+  segments       []*Db
+  maxSegmentSize int64
 }
 
 func NewSegmentedDatastore(dir string) (*SegmentedDatastore, error) {
@@ -34,14 +35,26 @@ func (ds *SegmentedDatastore) createNewSegment() error {
 }
 
 func (ds *SegmentedDatastore) Put(key, value string) error {
+  if len(ds.segments) == 0 {
+    if err := ds.createNewSegment(); err != nil {
+      return err
+    }
+  }
+
   active := ds.segments[len(ds.segments)-1]
 
   size, err := active.Size()
   if err != nil {
-    return err
+    if err := active.Close(); err != nil {
+      return err
+    }
+    if err := ds.createNewSegment(); err != nil {
+      return err
+    }
+    active = ds.segments[len(ds.segments)-1]
   }
 
-  if size >= MAX_SEGMENT_SIZE {
+  if size >= ds.maxSegmentSize {
     if err := active.Close(); err != nil {
       return err
     }
