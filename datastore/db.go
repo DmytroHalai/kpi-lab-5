@@ -25,7 +25,7 @@ type Db struct {
 	filename  string
 	index     hashIndex
 
-	mu       sync.Mutex
+	mu       sync.RWMutex
 	writeCh  chan entry
 	wg       sync.WaitGroup
 	stopOnce sync.Once
@@ -128,7 +128,9 @@ func (db *Db) Close() error {
 }
 
 func (db *Db) Get(key string) (string, error) {
+	db.mu.RLock()
 	position, ok := db.index[key]
+	db.mu.RUnlock()
 	if !ok {
 		return "", ErrNotFound
 	}
