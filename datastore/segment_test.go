@@ -48,9 +48,7 @@ func TestSegmentsCreation(t *testing.T) {
 }
 
 func TestMergeSegments(t *testing.T) {
-	dir := "testdata_merge"
-	os.RemoveAll(dir)
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	ds, err := NewSegmentedDatastore(dir, testMaxSegmentSize)
 	if err != nil {
