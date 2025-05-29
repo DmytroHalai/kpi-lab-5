@@ -1,0 +1,77 @@
+package datastore
+
+import (
+	"fmt"
+	"path/filepath"
+)
+
+type SegmentedDatastore struct {
+  dir      string
+  segments []*Db 
+}
+
+func NewSegmentedDatastore(dir string) (*SegmentedDatastore, error) {
+  ds := &SegmentedDatastore{
+    dir: dir,
+  }
+
+if err := ds.createNewSegment(); err != nil {
+    return nil, err
+  }
+  return ds, nil
+}
+
+func (ds *SegmentedDatastore) createNewSegment() error {
+  segmentName := fmt.Sprintf("segment-%d", len(ds.segments))
+  path := filepath.Join(ds.dir, segmentName)
+
+  db, err := Open(path)
+  if err != nil {
+    return err
+  }
+  ds.segments = append(ds.segments, db)
+  return nil
+}
+
+func (ds *SegmentedDatastore) Put(key, value string) error {
+  active := ds.segments[len(ds.segments)-1]
+
+  size, err := active.Size()
+  if err != nil {
+    return err
+  }
+
+  if size >= MAX_SEGMENT_SIZE {
+    if err := active.Close(); err != nil {
+      return err
+    }
+    if err := ds.createNewSegment(); err != nil {
+      return err
+    }
+    active = ds.segments[len(ds.segments)-1]
+  }
+
+  return active.Put(key, value)
+}
+
+func (ds *SegmentedDatastore) Get(key string) (string, error) {
+  for i := len(ds.segments) - 1; i >= 0; i-- {
+    val, err := ds.segments[i].Get(key)
+    if err == nil {
+      return val, nil
+    }
+    if err != ErrNotFound {
+      return "", err
+    }
+  }
+  return "", ErrNotFound
+}
+
+func (ds *SegmentedDatastore) Close() error {
+  for _, segment := range ds.segments {
+    if err := segment.Close(); err != nil {
+      return err
+    }
+  }
+  return nil
+}
